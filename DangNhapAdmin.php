@@ -27,11 +27,16 @@
             font-weight: 700;
             padding: 10px;
             border-radius: 5px 5px;
+            background-color:darkorange;
+            color: white;
+        }
+        #submit:hover{
+            background-color:blue;
         }
  
     </style>
     <body>
-        <form action="http://localhost/wordpress/admin/" method="POST">
+        <form action="#" method="POST">
             <h3>ĐĂNG NHẬP ADMIN</h3><br>
             <span>Tài khoản:</span><br><br>
             <input type="text" name="user" ><br><br>
@@ -40,30 +45,44 @@
             <a href="#">Quên mật khẩu</a><br><br>
             <input type="submit" id="submit" value="ĐĂNG NHẬP">
         </form>
-        <?php 
-             $connect=new mysqli("localhost","root","12345678","dichvuhangkhong");
-             $sql="select * from admin ";
-             if(isset($_POST['user']) && isset($_POST['passWord'])){
-                 $user=$_POST['user'];
-                 $pass=$_POST['passWord'];
+        <?php
+        getData();
+        function getData(){
+            if(isset($_POST['user']) && isset($_POST['passWord'])){
+                $user=$_POST['user'];
+                $pass=$_POST['passWord'];
+                $connect=new mysqli("localhost","root","12345678","quanlyhethongvemaybay");
                 if($user!='' && $pass!=''){
-                    $r=mysqli_query($connect,$sql);
-                    while($row=mysqli_fetch_assoc($r)){
-                        if($row['taiKhoan']==$user && $row['matKhau']!=$pass){
-                            echo("<script>alert('Sai mật khẩu !');</script>");
-                        }
-                        else if($row['taiKhoan']==$user && $row['matKhau']==$pass){
-                            echo("<script>location.assign('http://localhost/wordpress/portal-manager/');</script>");
-                        }
-                        else{
-                            echo("<script>alert('Tên đăng nhập và mật khẩu không đúng !');</script>");
-                        }
-                    };
-                    return;
+                    $result=checkUser($user,$pass,$connect);
+                    if($result){
+                        nextPage();
+                    }
+                    else{
+                        echo("<script>alert('Thông tin không chính xác !');</script>");
+                    }
                 }
-                echo("<script>alert('Bạn chưa nhập đầy đủ thông tin !');</script>");
-             }
-             
+                else {
+                    echo("<script>alert('Bạn chưa nhập đầy đủ thông tin !');</script>");
+                }
+                mysqli_close($connect);  
+            }
+        }
+        function checkUser($user,$pass,$connect){       
+            $sql="select * from admin ";
+            $r=mysqli_query($connect,$sql);
+            while($row=mysqli_fetch_assoc($r)){
+                if($row['TaiKhoan']==$user && $row['MatKhau']==$pass){
+                    return true ;
+                }
+                else{
+                    echo("<script>alert('Tên đăng nhập và mật khẩu không đúng !');</script>");
+                }
+            };
+            return false;
+        } 
+        function nextPage(){
+            echo("<script>location.replace('http://localhost/BigProject/PortalManager.php');</script>");
+        }        
         ?>
     </body>
 </html>

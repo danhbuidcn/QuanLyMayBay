@@ -45,64 +45,26 @@
         }
     </style>
     <body>
-        <form action="http://localhost/wordpress/dang-ki/" method="POST">
+        <form action="http://localhost/wordpress/dang-ki/" method="POST" name="DangNhap">
             <table>
                 <tr>
                     <td colspan="2"><h3>1. Thông tin cá nhân</h3></td>
                 </tr>
                 <tr>
-                    <td style="width:30%">Tên: </td>
-                    <td><input type="text" name="Ten" style="padding: 10px;" ></td>
-                </tr>
-                <tr>
-                    <td> Họ và chữ lót:</td>
-                    <td><input type="text" name="Ho" style="padding: 10px;" ></td>
-                </tr>
-                <tr>
-                    <td> E-Mail:</td>
-                    <td><input type="email" name="email" style="padding: 10px;" ></td>
+                    <td style="width:30%">Tên Khách Hàng: </td>
+                    <td><input type="text" name="TenKH" style="padding: 10px;" ></td>
                 </tr>
                 <tr>
                     <td> Điện Thoại:</td>
                     <td><input type="number" name="dienThoai" style="padding: 10px;" ></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><h3>2. Địa chỉ</h3></td>
-                </tr>
-                <tr>
                     <td> Địa chỉ:</td>
                     <td><input type="text" name="diaChi" style="padding: 10px;" ></td>
                 </tr>
                 <tr>
-                    <td> Địa chỉ liên hệ:</td>
-                    <td><input type="text" name="dcLienHe" style="padding: 10px;" ></td>
-                </tr>
-                <tr>
-                    <td> Thành Phố:</td>
-                    <td>
-                        <select name="ThanhPho" style="padding: 5px;" >
-                            <option>Hà Nội</option>
-                            <option>Đà Nẵng</option>
-                            <option>Cần Thơ</option>
-                            <option>Huế</option>
-                            <option>TP.HCM</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Quốc Gia:</td>
-                    <td>
-                        <select name="QuocGia" style="padding: 5px;" >
-                            <option>Viet Nam</option>
-                            <option>China</option>
-                            <option>UK</option>
-                            <option>USA</option>
-                            <option>Korea</option>
-                        </select> 
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2"><h3>3. Mật Khẩu</h3></td>
+                    <td> E-Mail:</td>
+                    <td><input type="email" name="email" style="padding: 10px;" ></td>
                 </tr>
                 <tr>
                     <td>Mật Khẩu:</td>
@@ -117,37 +79,56 @@
                 </tr>
             </table>
         </form>
-        <?php 
-            $tenKH=isset($_POST['Ten'])?$_POST['Ten']:'';
-            $hoKH=isset($_POST['Ho'])?$_POST['Ho']:'';
+        <?php    
+        DataProcessing();
+        function DataProcessing(){
+            $TenKH=isset($_POST['TenKH'])?$_POST['TenKH']:'';
             $email=isset($_POST['email'])?$_POST['email']:'';
             $dienThoai=isset($_POST['dienThoai'])?$_POST['dienThoai']:'';
             $diaChi=isset($_POST['diaChi'])?$_POST['diaChi']:'';
-            $dcLienHe=isset($_POST['dcLienHe'])?$_POST['dcLienHe']:'';
-            $ThanhPho=isset($_POST['ThanhPho'])?$_POST['ThanhPho']:'';
-            $QuocGia=isset($_POST['QuocGia'])?$_POST['QuocGia']:'';
+            $TongSoTien=0;
             $passWord=isset($_POST['passWord'])?$_POST['passWord']:'';
             $passWord2=isset($_POST['passWord2'])?$_POST['passWord2']:'';
-            if(isset($_POST['Ten'])){
-                if($tenKH==''||$hoKH==''||$email==''||$dienThoai==''||$diaChi==''||$dcLienHe==''||$ThanhPho==''||$QuocGia==''||$passWord==''||$passWord2==''){
+
+            GetData($TenKH,$email,$dienThoai,$diaChi,$TongSoTien,$passWord,$passWord2);
+        }  
+        function GetData($TenKH,$email,$dienThoai,$diaChi,$TongSoTien,$passWord,$passWord2){
+            if(isset($_POST['TenKH'])){
+                if($TenKH==''||$email==''||$dienThoai==''||$diaChi==''||$passWord==''||$passWord2==''){
                     echo("<script>alert('Mời bạn nhập đầy đủ thông tin !');</script>");
                 }
                 else if($passWord!=$passWord2){
                     echo("<script>alert('Mật khẩu không trùng khớp !');</script>");
                 }
                 else{
-                    $host="localhost";
-                    $user="root";
-                    $pass="12345678";
-                    $database="dichvuhangkhong";
-                    $connect=new mysqli($host,$user,$pass,$database);
-                    $sql="insert into khachhang values('$tenKH','$hoKH','$email','$dienThoai','$diaChi','$dcLienHe','$ThanhPho','$QuocGia','$passWord')";
-                    mysqli_query($connect,$sql);
-                    mysqli_close($connect);
+                    $MaKH=SetMaKH(); 
+                    ConnectSQL($MaKH,$TenKH,$email,$dienThoai,$diaChi,$TongSoTien,$passWord);
                     echo("<script>alert('Thêm mới thành công !');</script>");
+                    echo("<script>location.replace('http://localhost/wordpress/dang-nhap/');</script>");
                 }
             }
-
+        }    
+        function SetMaKH(){
+            $connect=new mysqli("localhost","root","12345678","quanlyhethongvemaybay");
+            $sqlSelect="select MaKhachHang from khachhang";
+            $result=mysqli_query($connect,$sqlSelect);
+            $rowCount=mysqli_num_rows($result);
+            if(empty($rowCount)){
+                $MaKH="KH01";
+            }
+            else{
+                $rowCount++;
+                $STT=$rowCount<10?'0'.(string)$rowCount:(string)$rowCount;
+                $MaKH="KH".$STT;
+            }    
+            return $MaKH;
+        }    
+        function ConnectSQL($MaKH,$TenKH,$email,$dienThoai,$diaChi,$TongSoTien,$passWord){
+            $connect=new mysqli("localhost","root","12345678","quanlyhethongvemaybay");
+            $sqlInsert="insert into khachhang values('$MaKH','$TenKH','$dienThoai','$diaChi','$email','$passWord','$TongSoTien');";
+            mysqli_query($connect,$sqlInsert);
+            mysqli_close($connect);
+        }
         ?>
     </body>
 </html>
